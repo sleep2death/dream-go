@@ -28,4 +28,12 @@ jobs:
       run: go build -v ./...
 
     - name: Test
-      run: go test -v ./...
+      run: go test -v ./... -coverprofile cover.out
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: cover.out
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true
