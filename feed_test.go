@@ -157,7 +157,7 @@ func TestGetFeed(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	res, err := accounts.UpdateOne(context.TODO(), bson.M{"_id": c.ID, "outbox.dream": dreamId}, bson.M{"$set": bson.M{
+	res, err := users.UpdateOne(context.TODO(), bson.M{"_id": c.ID, "outbox.dream": dreamId}, bson.M{"$set": bson.M{
 		"outbox.$.generated": primitive.NewDateTimeFromTime(time.Now().AddDate(0, 0, -5)),
 	}})
 

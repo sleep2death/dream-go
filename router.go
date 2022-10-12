@@ -45,6 +45,7 @@ func Setup(engine *gin.Engine) {
 	dreamHandlers()     // dream handlers
 	feedHandlers()      // user's feed handlers
 	subscribeHandlers() // users' subscribe handlers
+	likesHandlers()     // likes input handlers
 }
 
 func pingHandlers() {
@@ -84,7 +85,7 @@ func dbConn() (rdb *redis.Client, mdb *mongo.Client) {
 
 	// setup mongo db
 	db = mdb.Database(viper.GetString("db"))
-	accounts = db.Collection(viper.GetString("accounts"))
+	users = db.Collection(viper.GetString("users"))
 	dreams = db.Collection(viper.GetString("dreams"))
 	comments = db.Collection(viper.GetString("comments"))
 	ensureIndeces()
@@ -109,7 +110,7 @@ func Config() {
 
 	viper.SetDefault("mongo", "mongodb://localhost:27017")
 	viper.SetDefault("db", "DreamWalker")
-	viper.SetDefault("accounts", "accounts")
+	viper.SetDefault("users", "users")
 	viper.SetDefault("dreams", "dreams")
 	viper.SetDefault("comments", "comments")
 

@@ -74,7 +74,7 @@ func getDreamById(id string) (d *dream, err error) {
 }
 
 func addFeed(d *dream) error {
-	_, err := accounts.UpdateOne(context.TODO(), bson.M{"username": d.Author}, bson.M{
+	_, err := users.UpdateOne(context.TODO(), bson.M{"username": d.Author}, bson.M{
 		"$push": bson.M{
 			"outbox": bson.M{
 				"$each":     bson.A{&feed{Dream: d.ID, Generated: time.Now()}},
@@ -118,7 +118,7 @@ func getUserById(id string, projections ...string) (usr user, err error) {
 		opts.SetProjection(proj)
 	}
 
-	err = accounts.FindOne(context.TODO(), match, opts).Decode(&usr)
+	err = users.FindOne(context.TODO(), match, opts).Decode(&usr)
 	if err != nil {
 		return
 	}
@@ -260,7 +260,7 @@ func getFeeds(id string, since time.Time) (feeds []*dream, err error) {
 }
 
 func addFollowing(uid string, following string) error {
-	res, err := accounts.UpdateByID(context.TODO(), uid, bson.M{
+	res, err := users.UpdateByID(context.TODO(), uid, bson.M{
 		"$addToSet": bson.M{
 			"following": following,
 		}})
@@ -270,7 +270,7 @@ func addFollowing(uid string, following string) error {
 		return err
 	}
 
-	res, err = accounts.UpdateByID(context.TODO(), following, bson.M{
+	res, err = users.UpdateByID(context.TODO(), following, bson.M{
 		"$addToSet": bson.M{
 			"followers": uid,
 		}})
@@ -284,7 +284,7 @@ func addFollowing(uid string, following string) error {
 }
 
 func removeFollowing(uid string, following string) error {
-	res, err := accounts.UpdateByID(context.TODO(), uid, bson.M{
+	res, err := users.UpdateByID(context.TODO(), uid, bson.M{
 		"$pull": bson.M{
 			"following": following,
 		}})
@@ -294,7 +294,7 @@ func removeFollowing(uid string, following string) error {
 		return err
 	}
 
-	res, err = accounts.UpdateByID(context.TODO(), following, bson.M{
+	res, err = users.UpdateByID(context.TODO(), following, bson.M{
 		"$pull": bson.M{
 			"followers": uid,
 		}})

@@ -13,7 +13,7 @@ import (
 
 var db *mongo.Database
 
-var accounts *mongo.Collection
+var users *mongo.Collection
 var dreams *mongo.Collection
 var comments *mongo.Collection
 
@@ -25,7 +25,7 @@ func ensureIndeces() {
 		{Keys: bson.D{{Key: "email", Value: 1}}, Options: options.Index().SetUnique(true)},
 		{Keys: bson.D{{Key: "username", Value: 1}}, Options: options.Index().SetUnique(true)},
 	}
-	if _, err := accounts.Indexes().CreateMany(
+	if _, err := users.Indexes().CreateMany(
 		context.TODO(),
 		models,
 	); err != nil {
@@ -70,7 +70,7 @@ func newUser(email string, username string, hashedPassword string) error {
 		Inbox:  make([]feed, 0),
 	}
 
-	res, err := accounts.InsertOne(context.TODO(), usr)
+	res, err := users.InsertOne(context.TODO(), usr)
 
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func findUsrByName(name string, project bson.M) (usr bson.M, err error) {
 	opts := options.FindOne()
 	opts.SetProjection(project) // only password needed
 
-	err = accounts.FindOne(context.TODO(), bson.D{{Key: "username", Value: name}}, opts).Decode(&usr)
+	err = users.FindOne(context.TODO(), bson.D{{Key: "username", Value: name}}, opts).Decode(&usr)
 	return
 }
 
@@ -91,7 +91,7 @@ func findUsrByEmail(email string, project bson.M) (usr bson.M, err error) {
 	opts := options.FindOne()
 	opts.SetProjection(project) // only password needed
 
-	err = accounts.FindOne(context.TODO(), bson.D{{Key: "email", Value: email}}, opts).Decode(&usr)
+	err = users.FindOne(context.TODO(), bson.D{{Key: "email", Value: email}}, opts).Decode(&usr)
 	return
 }
 
@@ -99,7 +99,7 @@ func delUsrByName(name string) error {
 	match := bson.M{
 		"username": name,
 	}
-	res, err := accounts.DeleteOne(context.TODO(), match)
+	res, err := users.DeleteOne(context.TODO(), match)
 	if err != nil {
 		return err
 	}
