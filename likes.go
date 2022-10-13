@@ -16,7 +16,7 @@ type like struct {
 
 func likesHandlers() {
 	r.GET("/api/likes/add/:dreamId", jwtAuth, addLikeHandler)
-	r.GET("/api/likes/remove:dreamId", jwtAuth, removeLikeHandler)
+	r.GET("/api/likes/remove/:dreamId", jwtAuth, removeLikeHandler)
 }
 
 func addLikeHandler(c *gin.Context) {

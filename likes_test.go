@@ -52,6 +52,7 @@ func TestAddLike(t *testing.T) {
 	l.Debugln("waiting for 1 seconds...")
 	time.Sleep(time.Second * 1)
 
+	// add a like
 	dreamId := res[0]["id"].(string)
 	req, _ := http.NewRequest("GET", "/api/likes/add/"+dreamId, nil)
 	req.AddCookie(token)
@@ -68,5 +69,33 @@ func TestAddLike(t *testing.T) {
 
 	d, err = getDreamById(res[1]["id"].(string))
 	assert.Nil(t, err)
+	assert.Equal(t, 0, len(d.Likes))
+
+	// remove like
+	req, _ = http.NewRequest("GET", "/api/likes/remove/"+dreamId, nil)
+	req.AddCookie(token)
+	w = httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	assertOK(t, w)
+
+	expires("d:" + dreamId)
+	d, err = getDreamById(dreamId)
+	assert.Nil(t, err)
+
+	assert.Equal(t, 0, len(d.Likes))
+
+	// remove again
+	req, _ = http.NewRequest("GET", "/api/likes/remove/"+dreamId, nil)
+	req.AddCookie(token)
+	w = httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	assertOK(t, w)
+
+	expires("d:" + dreamId)
+	d, err = getDreamById(dreamId)
+	assert.Nil(t, err)
+
 	assert.Equal(t, 0, len(d.Likes))
 }
