@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -71,6 +72,10 @@ func TestAddLike(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 0, len(d.Likes))
 
+	// make exp time even shorter
+	viper.SetDefault("expDreamShort", time.Millisecond*10)
+	defer viper.SetDefault("expDreamShort", time.Minute*5)
+
 	// remove like
 	req, _ = http.NewRequest("GET", "/api/likes/remove/"+dreamId, nil)
 	req.AddCookie(token)
@@ -79,13 +84,15 @@ func TestAddLike(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assertOK(t, w)
 
-	expires("d:" + dreamId)
+	// wait for cache expiration
+	time.Sleep(time.Millisecond * 15)
+
 	d, err = getDreamById(dreamId)
 	assert.Nil(t, err)
 
 	assert.Equal(t, 0, len(d.Likes))
 
-	// remove again
+	// remove like again, take no effect
 	req, _ = http.NewRequest("GET", "/api/likes/remove/"+dreamId, nil)
 	req.AddCookie(token)
 	w = httptest.NewRecorder()
@@ -93,7 +100,9 @@ func TestAddLike(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assertOK(t, w)
 
-	expires("d:" + dreamId)
+	// wait for cache expiration
+	time.Sleep(time.Millisecond * 15)
+
 	d, err = getDreamById(dreamId)
 	assert.Nil(t, err)
 
