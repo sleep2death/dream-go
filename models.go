@@ -30,7 +30,7 @@ func addDream(d *dream) error {
 	return nil
 }
 
-func updateDream(d *dream) error {
+func updateDream(d *dream, keepCache bool) error {
 	// insert dream into mongodb
 	if _, err := dreams.UpdateByID(context.TODO(), d.ID, bson.M{"$set": d}); err != nil {
 		return err
@@ -40,8 +40,13 @@ func updateDream(d *dream) error {
 	// 	return err
 	// }
 
-	// cache dream with redis
-	expires("d:" + d.ID)
+	// clear cache of the dream
+	if !keepCache {
+		expires("d:" + d.ID)
+	} else {
+		// or make the expire time much shorter
+		expiresIn("d:"+d.ID, viper.GetDuration("expDreamShort"))
+	}
 
 	return nil
 }

@@ -38,6 +38,8 @@ type dream struct {
 
 	Created  time.Time `json:"created" bson:"created"`
 	Finished time.Time `json:"finished" bson:"finished"`
+
+	Likes []string `json:"likes" bson:"likes"`
 }
 
 func dreamHandlers() {
@@ -65,6 +67,7 @@ func newDreamHandler(c *gin.Context) {
 	d.Created = time.Now()
 	d.Author = c.GetString("username") // add author name by http-only cookie
 	d.AuthorID = c.GetString("uuid")   // add author id by http-only cookie
+	d.Likes = make([]string, 0)
 
 	l.Debugln("new dream:", d)
 

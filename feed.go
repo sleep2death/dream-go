@@ -1,7 +1,6 @@
 package dream
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -22,10 +21,6 @@ func feedHandlers() {
 // get user's feeds
 func feedsGetHandler(c *gin.Context) {
 	uuid := c.GetString("uuid")
-	if len(uuid) == 0 {
-		badRequest(c, errors.New("user id not found"))
-		return
-	}
 
 	s := time.Now().AddDate(0, 0, viper.GetInt("feedUpdatedLimit"))
 	feeds, err := getFeeds(uuid, s)
@@ -44,10 +39,6 @@ func feedsGetHandler(c *gin.Context) {
 
 func feedsNewHandler(c *gin.Context) {
 	uuid := c.GetString("uuid")
-	if len(uuid) == 0 {
-		badRequest(c, errors.New("user id not found"))
-		return
-	}
 
 	since := time.Now().AddDate(0, 0, viper.GetInt("feedUpdatedLimit"))
 	feeds, err := hasNewFeeds(uuid, since)

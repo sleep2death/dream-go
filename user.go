@@ -15,4 +15,6 @@ type user struct {
 	Outbox  []feed    `json:"outbox" bson:"outbox"`   // subscriptions of the user
 	Inbox   []feed    `json:"inbox" bson:"inbox"`     // subscriptions of the user
 	Updated time.Time `json:"updated" bson:"updated"` // created time
+
+	Likes []like `json:"likes" bson:"likes"` // dreams which user liked
 }

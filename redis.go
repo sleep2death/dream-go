@@ -33,3 +33,9 @@ func expires(key string) error {
 	err := rdb.ExpireAt(context.TODO(), key, time.Now()).Err()
 	return err
 }
+
+func expiresIn(key string, duration time.Duration) error {
+	return rdb.ExpireLT(context.TODO(), key, duration).Err()
+	// err := rdb.ExpireAt(context.TODO(), key, time.Now()).Err()
+	// return err
+}

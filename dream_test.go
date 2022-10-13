@@ -54,7 +54,7 @@ func sdSimulating(ctx context.Context) {
 
 			// update dream status
 			d.Status = dsProcessing
-			err = updateDream(d)
+			err = updateDream(d, false)
 			if err != nil {
 				// l.Debugln("queue failed", err)
 				l.Panic(err)
@@ -72,7 +72,7 @@ func sdSimulating(ctx context.Context) {
 			now := time.Now()
 			d.Finished = now
 
-			err = updateDream(d)
+			err = updateDream(d, false)
 			if err != nil {
 				l.Panic(err)
 			}

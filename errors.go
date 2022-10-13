@@ -29,3 +29,9 @@ func permissionError(c *gin.Context, err error) {
 	})
 	l.Errorln("method not allowed", err)
 }
+
+func ok(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"ok": true,
+	})
+}
