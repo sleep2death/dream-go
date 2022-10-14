@@ -73,7 +73,7 @@ func TestAddLike(t *testing.T) {
 	assert.Equal(t, 0, len(d.Likes))
 
 	// make exp time even shorter
-	viper.SetDefault("expDreamShort", time.Millisecond*10)
+	viper.SetDefault("expDreamShort", time.Second*1)
 	defer viper.SetDefault("expDreamShort", time.Minute*5)
 
 	// remove like
@@ -84,8 +84,9 @@ func TestAddLike(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assertOK(t, w)
 
+	// expires("d:" + dreamId)
 	// wait for cache expiration
-	time.Sleep(time.Millisecond * 15)
+	time.Sleep(time.Millisecond * 1100)
 
 	d, err = getDreamById(dreamId)
 	assert.Nil(t, err)
@@ -100,8 +101,9 @@ func TestAddLike(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assertOK(t, w)
 
+	// expires("d:" + dreamId)
 	// wait for cache expiration
-	time.Sleep(time.Millisecond * 15)
+	time.Sleep(time.Millisecond * 1100)
 
 	d, err = getDreamById(dreamId)
 	assert.Nil(t, err)

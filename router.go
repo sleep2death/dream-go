@@ -46,6 +46,7 @@ func Setup(engine *gin.Engine) {
 	feedHandlers()      // user's feed handlers
 	subscribeHandlers() // users' subscribe handlers
 	likesHandlers()     // likes input handlers
+	commentsHandlers()  // comments handlers
 }
 
 func pingHandlers() {
@@ -88,6 +89,7 @@ func dbConn() (rdb *redis.Client, mdb *mongo.Client) {
 	users = db.Collection(viper.GetString("users"))
 	dreams = db.Collection(viper.GetString("dreams"))
 	comments = db.Collection(viper.GetString("comments"))
+
 	ensureIndeces()
 
 	return
@@ -123,6 +125,7 @@ func Config() {
 	viper.SetDefault("expOutbox", time.Hour*1)        // user's outbox cache will expires in ONE hour by default
 	viper.SetDefault("expUser", time.Hour*1)          // user's cache will expires in ONE hour by default
 	viper.SetDefault("expFeedUpdatedAt", time.Hour*1) // user's feed updated time cache will expires in ONE hour by default
+	viper.SetDefault("expComments", time.Hour*1)      // dreams's comments cache will expires in ONE hour by default
 
 	viper.SetDefault("expNewFeed", time.Minute*1) // user's new feed  cache will expires in 1 minute by default
 
@@ -130,6 +133,9 @@ func Config() {
 	viper.SetDefault("outboxLimit", 24) // max outbox length
 
 	viper.SetDefault("feedUpdatedLimit", -3) // default feed updated limit at 3 days ago
+
+	viper.SetDefault("commentMaxLen", 128)  // max comment length
+	viper.SetDefault("commentsPerPage", 12) // max comment length
 
 	// env vars must prefix with "vp",
 	// eg: "VP_HELLO=12" in .env file, then viper.Get("hello")

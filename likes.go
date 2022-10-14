@@ -70,8 +70,7 @@ func addLike(author string, dream string) error {
 	l.Debugln("add like from", dream, "by", author, ":", res.ModifiedCount)
 
 	// make the cache expires in a short time
-	expiresIn("d:"+dream, viper.GetDuration("expDreamShort"))
-	return nil
+	return expiresIn("d:"+dream, viper.GetDuration("expDreamShort"))
 }
 
 func removeLike(author string, dream string) error {
@@ -85,9 +84,9 @@ func removeLike(author string, dream string) error {
 		return err
 	}
 
-	l.Debugln("remove like from", dream, "by", author, ":", res.ModifiedCount)
+	exp := viper.GetDuration("expDreamShort")
+	l.Debugln("remove like from", dream, "by", author, ":", res.ModifiedCount, "exp:", exp)
 
 	// make the cache expires in a short time
-	expiresIn("d:"+dream, viper.GetDuration("expDreamShort"))
-	return nil
+	return expiresIn("d:"+dream, exp)
 }

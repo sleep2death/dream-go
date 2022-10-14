@@ -45,6 +45,10 @@ func ensureIndeces() {
 	}
 
 	// Ensure indeces for comments
+	models = []mongo.IndexModel{
+		{Keys: bson.D{{Key: "dream", Value: 1}}},
+		{Keys: bson.D{{Key: "created", Value: 1}}},
+	}
 	if _, err := comments.Indexes().CreateMany(
 		context.TODO(),
 		models,
