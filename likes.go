@@ -70,6 +70,7 @@ func addLike(author string, dream string) error {
 	l.Debugln("add like from", dream, "by", author, ":", res.ModifiedCount)
 
 	// make the cache expires in a short time
+	// NOTE: redis only takes "1 second" as minimal expiration time
 	return expiresIn("d:"+dream, viper.GetDuration("expDreamShort"))
 }
 
@@ -88,5 +89,6 @@ func removeLike(author string, dream string) error {
 	l.Debugln("remove like from", dream, "by", author, ":", res.ModifiedCount, "exp:", exp)
 
 	// make the cache expires in a short time
+	// NOTE: redis only takes "1 second" as minimal expiration time
 	return expiresIn("d:"+dream, exp)
 }

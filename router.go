@@ -120,6 +120,7 @@ func Config() {
 
 	viper.SetDefault("pwdMinStr", 50) // password minimal strengh, 40-70 maybe reasonable
 
+	// NOTE: redis only takes "1 second" as minimal expiration time
 	viper.SetDefault("expDream", time.Hour*1)         // dream details cache will expires in ONE hour by default
 	viper.SetDefault("expDreamShort", time.Minute*5)  // dream details cache will expires in 5 minutes by default
 	viper.SetDefault("expOutbox", time.Hour*1)        // user's outbox cache will expires in ONE hour by default

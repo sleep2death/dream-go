@@ -39,7 +39,7 @@ func TestAddComment(t *testing.T) {
 	var n int = 3
 	var res []map[string]interface{}
 
-	// add 10 dream
+	// add 3 dreams
 	for d := 0; d < n; d++ {
 		dr := newTestDream()
 		dr.Prompt = dr.Prompt + " " + strconv.Itoa(n)
