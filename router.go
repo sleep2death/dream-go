@@ -47,6 +47,7 @@ func Setup(engine *gin.Engine) {
 	subscribeHandlers() // users' subscribe handlers
 	likesHandlers()     // likes input handlers
 	commentsHandlers()  // comments handlers
+	userHandlers()
 }
 
 func pingHandlers() {

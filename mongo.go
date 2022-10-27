@@ -83,6 +83,27 @@ func newUser(email string, username string, hashedPassword string) error {
 	return nil
 }
 
+func newWxUser(openid string) error {
+	usr := &user{
+		ID:      openid,
+		Created: time.Now(),
+
+		Following: []string{}, // follow user self first
+		Followers: []string{},
+
+		Outbox: make([]feed, 0),
+		Inbox:  make([]feed, 0),
+	}
+
+	res, err := users.InsertOne(context.TODO(), usr)
+
+	if err != nil {
+		return err
+	}
+	l.Infoln("ADD WEIXIN USER", openid, res.InsertedID)
+	return nil
+}
+
 func findUsrByName(name string, project bson.M) (usr bson.M, err error) {
 	opts := options.FindOne()
 	opts.SetProjection(project) // only password needed

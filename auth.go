@@ -1,7 +1,10 @@
 package dream
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/mail"
 	"time"
@@ -29,9 +32,19 @@ type claims struct {
 	jwt.RegisteredClaims
 }
 
+type wxAuth struct {
+	OpenId     string `json:"openid"`
+	SessionKey string `json:"session_key"`
+	UnionId    string `json:"unionid"`
+	ErrCode    int    `json:"errcode"`
+	ErrMsg     string `json:"errmsg"`
+}
+
 func authHandlers() {
 	r.POST("/api/auth/login", loginHandler)
 	r.POST("/api/auth/signup", signupHandler)
+	r.GET("/api/auth/wx/:code", wxLoginHandler)
+	r.GET("/api/auth/wx_token/:token", wxTokenHandler)
 }
 
 func loginHandler(c *gin.Context) {
@@ -178,4 +191,143 @@ func jwtAuth(c *gin.Context) {
 		permissionError(c, errAuthFailed)
 		c.Abort()
 	}
+}
+
+func wxJwtAuth(c *gin.Context) {
+	str, err := c.Cookie("jwt_token")
+	if err != nil {
+		permissionError(c, errAuthFailed)
+		c.Abort()
+		return
+	}
+
+	var cl jwt.MapClaims
+	token, err := jwt.ParseWithClaims(str, &cl, func(token *jwt.Token) (interface{}, error) {
+		return []byte(viper.GetString("jwt_key")), nil
+	})
+
+	if err != nil {
+		permissionError(c, errAuthFailed)
+		c.Abort()
+		return
+	}
+
+	if token.Valid {
+		// log.Printf("%v %v", claims.Email, claims.StandardClaims.Issuer)
+		c.Set("id", cl["id"])
+		c.Set("session", cl["session"])
+		c.Next()
+	} else {
+		permissionError(c, errAuthFailed)
+		c.Abort()
+	}
+}
+
+func wxLoginHandler(c *gin.Context) {
+	code := c.Param("code")
+
+	if len(code) == 0 {
+		badRequest(c, errors.New("error.empty_param"))
+		return
+	}
+
+	appSecret := viper.GetString("WECHAT_SECRET")
+	if len(code) == 0 {
+		internalError(c, errors.New("wechat app-secret not found"))
+		return
+	}
+
+	appId := viper.GetString("WECHAT_APP")
+	if len(code) == 0 {
+		internalError(c, errors.New("wechat app-id not found"))
+		return
+	}
+
+	appGrant := viper.GetString("WECHAT_GRANT")
+	if len(code) == 1 {
+		internalError(c, errors.New("wechat app-grant-type not found"))
+		return
+	}
+
+	resp, err := http.Get(fmt.Sprintf("https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=%s", appId, appSecret, code, appGrant))
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	var result wxAuth
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	if result.ErrCode != 0 {
+		badRequest(c, errors.New(result.ErrMsg))
+		return
+	}
+
+	id := "wx:" + result.OpenId
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":      id,
+		"session": result.SessionKey,
+	})
+	ss, err := token.SignedString([]byte(viper.GetString("jwt_key")))
+	if err != nil {
+		internalError(c, err)
+	}
+
+	_, err = getUserById(id)
+	if err == mongo.ErrNoDocuments {
+		l.Debugln("incoming new wechat user", result.OpenId)
+
+		err = newWxUser("wx:" + result.OpenId)
+
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"ok":    true,
+			"isNew": true,
+			"token": ss,
+		})
+	} else if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"ok":    true,
+		"isNew": false,
+		"token": ss,
+	})
+}
+
+func wxTokenHandler(c *gin.Context) {
+	str, err := c.Cookie("jwt_token")
+	if err != nil {
+		permissionError(c, errAuthFailed)
+		return
+	}
+
+	token, err := jwt.ParseWithClaims(str, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(viper.GetString("jwt_key")), nil
+	})
+
+	if err != nil || !token.Valid {
+		permissionError(c, errAuthFailed)
+		return
+	}
+
+	ok(c)
 }
