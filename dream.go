@@ -34,7 +34,7 @@ type dream struct {
 	Author   string      `json:"author" bson:"author"`
 	AuthorID string      `json:"authorId" bson:"authorId"`
 	Status   dreamStatus `json:"status" bson:"status"`
-	Images   []string    `json:"image" bson:"image"`
+	Images   []string    `json:"images" bson:"images"`
 
 	Created  time.Time `json:"created" bson:"created"`
 	Finished time.Time `json:"finished" bson:"finished"`
@@ -68,8 +68,9 @@ func newDreamHandler(c *gin.Context) {
 	d.Author = c.GetString("username") // add author name by http-only cookie
 	d.AuthorID = c.GetString("uuid")   // add author id by http-only cookie
 	d.Likes = make([]string, 0)
+	d.Images = make([]string, 0)
 
-	l.Debugln("new dream:", d)
+	l.Debugln("NEW DREAM:", d)
 
 	err = addDream(d) // insert it into mongodb, then cache it with redis
 	if err != nil {

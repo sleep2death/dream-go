@@ -2,6 +2,7 @@ package dream
 
 import (
 	"context"
+	"encoding/json"
 	"sort"
 	"time"
 
@@ -18,15 +19,21 @@ func addDream(d *dream) error {
 		return err
 	}
 
-	// cache dream with redis
-	// if err := setCache("d:"+d.ID, d, viper.GetDuration("expDream")); err != nil {
-	// 	return err
-	// }
-
 	// push the task into queue
 	if err := rdb.RPush(context.TODO(), "DQ", d.ID).Err(); err != nil {
 		return err
 	}
+
+	b, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+
+	// cache temp dream's with redis
+	if err = rdb.Set(context.TODO(), "d:"+d.ID+":temp", b, viper.GetDuration("expDream")).Err(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
